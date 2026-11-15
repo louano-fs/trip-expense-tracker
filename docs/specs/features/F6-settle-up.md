@@ -179,7 +179,7 @@ The suggestion rule, the payment-with-balances calculation, and the stale-sugges
 | F6.AC15 | Unit (headless browser component test): trip page shows the Settle up section and no settle-up placeholder text. |
 
 ## Open questions
-- [ ] Confirm the proposed copy in "States & errors" and F6.R12: "Settle up", "Loading settle-up…", "pays" / "paid" row wording, "Everyone is settled up.", "No payments recorded yet.", "Add people to this trip before you can settle up.", "Go to People", "Couldn't load settle-up.", "Try again", "The suggestions changed. Check the list and try again.", "Delete this payment?", "Delete payment", and "That payment is no longer on this trip." Not answered yet; this spec does not assume approval.
+- [x] Confirm the proposed copy in "States & errors" and F6.R12 (answered 2026-11-15: approved as written).
 
 ## Decisions log
 - 2026-11-15: Tie order for suggestions → Order added to the trip (F3.R4), same as balances and the People list (user's answer: recommended option).
@@ -187,4 +187,5 @@ The suggestion rule, the payment-with-balances calculation, and the stale-sugges
 - 2026-11-15: Stale suggestion on mark → Refuse with `409` and refresh; nothing recorded (user's answer: recommended option).
 - 2026-11-15: Delete payment confirmation → Dialog like expense delete (user's answer: recommended option).
 - 2026-11-15: Partial payments → Not allowed; "mark a suggested payment as paid" is read as the full suggested amount (derived from product.md §3 F6 wording; not separately asked).
-- 2026-11-15: Spec approved by the user (14 requirements, 15 acceptance criteria). The copy question in Open questions remains unanswered and is not settled by this approval.
+- 2026-11-15: Spec approved by the user (14 requirements, 15 acceptance criteria).
+- 2026-11-15: Proposed copy in "States & errors" and F6.R12 → Approved as written.
