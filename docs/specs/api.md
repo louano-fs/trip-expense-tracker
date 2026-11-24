@@ -47,6 +47,15 @@ Set by register and login (F1.R7):
 ### Logged-out trip requests (F1.R10)
 Any trip endpoint (from F2 on) called with no cookie or an expired session returns `401` with no trip data. The trip endpoints themselves are added in F2.
 
+### GET /api/trips (placeholder in F1)
+A guarded placeholder for the trip list (F1.R10). It reads no trip data and F1 has no trips, so a live session gets an empty list. F2 replaces it with the real list.
+
+| Status | When | Body |
+|---|---|---|
+| 401 | No session cookie, or the cookie is not the session cookie | `{ "error": "Unauthorized" }`, with no `reason` key |
+| 401 | A session cookie was sent, but no live session matched (unknown, or 30 days reached) | `{ "error": "Unauthorized", "reason": "expired" }` |
+| 200 | Live session | `{ "trips": [] }` |
+
 ### GET /api/trips/:id (placeholder in F1)
 A guarded placeholder that proves the login gate (F1.R10). It reads no trip data. F2 replaces it with the real trip endpoint.
 

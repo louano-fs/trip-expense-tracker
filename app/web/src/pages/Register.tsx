@@ -15,7 +15,12 @@ const emailTakenMessage: ReactNode = (
 
 // Register screen (F1.R1 to F1.R5). The server checks the rules; this screen
 // shows each rejection next to its field. Only empty fields are checked here.
-export function Register() {
+export interface RegisterProps {
+  /** Called after a successful registration so the app knows a session is live (F1.AC1). */
+  onRegistered?: () => void;
+}
+
+export function Register({ onRegistered }: RegisterProps = {}) {
   const navigate = useNavigate();
   const emailRef = useRef<HTMLInputElement>(null);
   const passwordRef = useRef<HTMLInputElement>(null);
@@ -43,6 +48,7 @@ export function Register() {
     setBusy(true);
     try {
       await register(email, password);
+      onRegistered?.();
       navigate('/trips', { replace: true });
     } catch (error) {
       // The server rejected the registration. Show the reason next to its field,

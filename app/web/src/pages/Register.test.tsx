@@ -51,6 +51,52 @@ describe('F1 Register screen', () => {
     expect(fetchMock).toHaveBeenCalledWith('/api/register', expect.objectContaining({ method: 'POST' }));
   });
 
+  it('F1.AC1 calls onRegistered after a successful registration', async () => {
+    const user = userEvent.setup();
+    const onRegistered = vi.fn();
+    fetchMock.mockResolvedValue(jsonResponse(201, { user: { id: 1, email: 'sam@mail.com' } }));
+    render(
+      <MemoryRouter initialEntries={['/register']}>
+        <Routes>
+          <Route path="/register" element={<Register onRegistered={onRegistered} />} />
+          <Route path="/trips" element={<Trips />} />
+        </Routes>
+      </MemoryRouter>,
+    );
+
+    await user.type(screen.getByLabelText('Email'), 'sam@mail.com');
+    await user.type(screen.getByLabelText('Password'), 'my secret phrase here');
+    await user.click(screen.getByRole('button', { name: 'Create account' }));
+
+    expect(await screen.findByRole('heading', { name: 'Trips' })).toBeTruthy();
+    expect(onRegistered).toHaveBeenCalledTimes(1);
+  });
+
+  it('F1.AC2 does not call onRegistered when the server rejects the registration', async () => {
+    const user = userEvent.setup();
+    const onRegistered = vi.fn();
+    fetchMock.mockResolvedValue(
+      jsonResponse(409, {
+        error: 'An account with this email already exists. Log in instead.',
+        field: 'email',
+      }),
+    );
+    render(
+      <MemoryRouter initialEntries={['/register']}>
+        <Routes>
+          <Route path="/register" element={<Register onRegistered={onRegistered} />} />
+        </Routes>
+      </MemoryRouter>,
+    );
+
+    await user.type(screen.getByLabelText('Email'), 'sam@mail.com');
+    await user.type(screen.getByLabelText('Password'), 'my secret phrase here');
+    await user.click(screen.getByRole('button', { name: 'Create account' }));
+
+    await screen.findByText(/already exists/);
+    expect(onRegistered).not.toHaveBeenCalled();
+  });
+
   it('F1.AC24 "Show password" changes the input type and the label to "Hide password"', async () => {
     const user = userEvent.setup();
     renderRegister();

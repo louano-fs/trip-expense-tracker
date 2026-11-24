@@ -2,7 +2,7 @@
 import express, { type Express } from 'express';
 import { createErrorHandler, type ErrorLogger } from './errors.ts';
 import { loginRoute, logoutRoute, registerRoute, type AuthRouteDeps } from './routes/auth.ts';
-import { tripPlaceholderRoute, type PlaceholderDeps } from './routes/trips-placeholder.ts';
+import { tripListPlaceholderRoute, tripPlaceholderRoute, type PlaceholderDeps } from './routes/trips-placeholder.ts';
 
 export interface AppDeps {
   auth: AuthRouteDeps;
@@ -19,7 +19,8 @@ export function createApp(deps: AppDeps): Express {
   app.post('/api/register', registerRoute(deps.auth));
   app.post('/api/login', loginRoute(deps.auth));
   app.post('/api/logout', logoutRoute(deps.auth));
-  // Guarded placeholder: apiGuard runs before any trip data is read (F1.R10). F2 replaces it.
+  // Guarded placeholders: apiGuard runs before any trip data is read (F1.R10). F2 replaces them.
+  app.get('/api/trips', tripListPlaceholderRoute(deps.trips));
   app.get('/api/trips/:id', tripPlaceholderRoute(deps.trips));
 
   // Must come last so it catches errors from every route above (project rules: no swallowed errors).
