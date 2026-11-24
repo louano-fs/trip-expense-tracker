@@ -1,5 +1,5 @@
 // Placeholder for the trip endpoints until F2 adds them (F1.R10). It only shows the login gate in front of a trip route.
-// Every trip endpoint runs apiGuard before any trip data is read; F1 has no trips, so a live session gets 404 (by id) or an empty list.
+// Every trip endpoint runs apiGuard before any trip data is read; F1 has no trips, so a live session gets 200 with null (by id) or an empty list.
 import { apiGuard } from '../../auth/guards.ts';
 import type { Clock, SessionStore } from '../../auth/sessions.ts';
 import { readSessionToken } from '../cookies.ts';
@@ -43,7 +43,8 @@ function loginGate(req: PlaceholderRequest, deps: PlaceholderDeps): GateDenied |
 }
 
 /**
- * GET /api/trips/:id: 401 with no data when logged out or expired (F1.R10); 404 otherwise, since F1 has no trips.
+ * GET /api/trips/:id: 401 with no data when logged out or expired (F1.R10); 200 with `trip: null` otherwise,
+ * since F1 has no trips. The web app treats any non-2xx as an error, so 200 is what marks a live session.
  */
 export function tripPlaceholderRoute(deps: PlaceholderDeps): (req: PlaceholderRequest, res: RouteResponse) => void {
   return (req, res) => {
@@ -53,8 +54,8 @@ export function tripPlaceholderRoute(deps: PlaceholderDeps): (req: PlaceholderRe
       res.json(denied.body);
       return;
     }
-    res.status(404);
-    res.json({ error: 'Trip not found.' });
+    res.status(200);
+    res.json({ trip: null });
   };
 }
 

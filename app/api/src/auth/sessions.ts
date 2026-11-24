@@ -28,16 +28,23 @@ export function hashSessionToken(token: string): string {
   return createHash('sha256').update(token).digest('hex');
 }
 
+/** A new session: the raw token for the cookie, and the expiry time stored with it (UTC). */
+export interface StartedSession {
+  token: string;
+  expiresAt: Date;
+}
+
 /**
- * Starts a session for a user. Returns the raw token for the cookie.
- * Stores only its hash, with created and expiry times in UTC.
+ * Starts a session for a user. Returns the raw token for the cookie and the
+ * expiry it stored, so the cookie can use the same time (F1.R7).
+ * Stores only the token's hash, with created and expiry times in UTC.
  */
-export function createSession(options: {
+export function startSession(options: {
   userId: number;
   store: SessionStore;
   clock: Clock;
   random: RandomSource;
-}): string {
+}): StartedSession {
   const { userId, store, clock, random } = options;
   const token = Buffer.from(random(32)).toString('base64url');
   const createdAt = clock.now();
@@ -48,7 +55,17 @@ export function createSession(options: {
     createdAt: createdAt.toISOString(),
     expiresAt: expiresAt.toISOString(),
   });
-  return token;
+  return { token, expiresAt };
+}
+
+/** Starts a session and returns only the raw token. Use startSession when the expiry is needed. */
+export function createSession(options: {
+  userId: number;
+  store: SessionStore;
+  clock: Clock;
+  random: RandomSource;
+}): string {
+  return startSession(options).token;
 }
 
 /**

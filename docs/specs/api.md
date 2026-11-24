@@ -63,7 +63,7 @@ A guarded placeholder that proves the login gate (F1.R10). It reads no trip data
 |---|---|---|
 | 401 | No session cookie, or the cookie is not the session cookie | `{ "error": "Unauthorized" }`, with no `reason` key |
 | 401 | A session cookie was sent, but no live session matched (unknown, or 30 days reached) | `{ "error": "Unauthorized", "reason": "expired" }` |
-| 404 | Live session (F1 has no trips yet) | `{ "error": "Trip not found." }` |
+| 200 | Live session (F1 has no trips yet) | `{ "trip": null }` |
 
 `reason` is only ever `"expired"`, and only on a 401 (F1.R7, F1.AC23). The web app uses it to show the expired notice on the Log in screen. The 401 body never contains trip data (F1.AC10).
 

@@ -3,7 +3,6 @@
 import type { LoginInput, LoginResult } from '../../auth/login.ts';
 import type { RegisterInput, RegisterResult } from '../../auth/register.ts';
 import { userView } from '../../auth/responses.ts';
-import { SESSION_LIFETIME_MS, type Clock } from '../../auth/sessions.ts';
 import { clearSessionCookie, readSessionToken, sessionCookie } from '../cookies.ts';
 
 /** The request fields the auth routes read. Express's Request satisfies this. */
@@ -26,7 +25,6 @@ export interface AuthRouteDeps {
   login(input: LoginInput): Promise<LoginResult>;
   /** Ends the session for this raw token. Other sessions are not touched (F1.R8). */
   endSession(token: string): boolean;
-  clock: Clock;
   /** Session cookie `Secure` flag, from config (F1.R7). */
   cookieSecure: boolean;
 }
@@ -53,8 +51,7 @@ export function registerRoute(deps: AuthRouteDeps): (req: RouteRequest, res: Rou
       res.json({ error: result.message, field: result.field });
       return;
     }
-    const expiresAt = new Date(deps.clock.now().getTime() + SESSION_LIFETIME_MS);
-    res.setHeader('Set-Cookie', sessionCookie(result.token, expiresAt, deps.cookieSecure));
+    res.setHeader('Set-Cookie', sessionCookie(result.token, result.expiresAt, deps.cookieSecure));
     res.status(201);
     res.json({ user: userView(result.user) });
   };
@@ -72,8 +69,7 @@ export function loginRoute(deps: AuthRouteDeps): (req: RouteRequest, res: RouteR
       res.json({ error: result.message });
       return;
     }
-    const expiresAt = new Date(deps.clock.now().getTime() + SESSION_LIFETIME_MS);
-    res.setHeader('Set-Cookie', sessionCookie(result.token, expiresAt, deps.cookieSecure));
+    res.setHeader('Set-Cookie', sessionCookie(result.token, result.expiresAt, deps.cookieSecure));
     res.status(200);
     res.json({ user: result.user });
   };

@@ -301,7 +301,7 @@ A person checks these in code review, because unit tests can't prove them:
 - [ ] Every migration runs in one transaction; the `sessions` foreign key cascades (F1.T4).
 - [ ] Every SQL statement uses `?` parameters (F1.T4).
 - [ ] Argon2id parameters match the spec in `password.ts` (F1.T3).
-- [ ] The downloaded blocklist was read by a person before being committed (F1.T2).
+- [ ] The starter blocklist in `blocklist.ts` was read by a person (F1.T2). No file is downloaded.
 - [ ] `ownsTrip` is called after `apiGuard` in every future trip endpoint (F1.T9; enforced in F2–F6).
 
 ## Risks

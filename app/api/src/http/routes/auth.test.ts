@@ -6,7 +6,7 @@ import { buildBlocklist, STARTER_BLOCKLIST } from '../../auth/blocklist.ts';
 import { login, LOGIN_MESSAGES, type LoginDeps } from '../../auth/login.ts';
 import { register, type RegisterDeps } from '../../auth/register.ts';
 import { apiGuard } from '../../auth/guards.ts';
-import { createSession, endSession, type Clock, type SessionStore } from '../../auth/sessions.ts';
+import { createSession, endSession, SESSION_LIFETIME_MS, type Clock, type SessionStore } from '../../auth/sessions.ts';
 import { createLoginThrottle } from '../../auth/throttle.ts';
 import { readSessionToken } from '../cookies.ts';
 import {
@@ -138,7 +138,6 @@ function routeDeps(overrides: Partial<AuthRouteDeps> = {}): AuthRouteDeps {
       throw new Error('login not set up in this test');
     },
     endSession: () => true,
-    clock,
     cookieSecure: true,
     ...overrides,
   };
@@ -165,6 +164,10 @@ describe('POST /api/register', () => {
     expect(cookie).toContain('Secure');
     expect(cookie).toContain('SameSite=Lax');
     expect(cookie).toContain('Path=/');
+    // F1.AC12 the cookie expiry is the stored session's expiry (F1.R7).
+    const [stored] = [...deps.sessions.rows.values()];
+    expect(stored?.expiresAt).toBe(new Date(NOW.getTime() + SESSION_LIFETIME_MS).toISOString());
+    expect(cookie).toContain(`Expires=${new Date(stored?.expiresAt ?? '').toUTCString()}`);
   });
 
   it('F1.AC2 register with an email already taken returns 409 and sets no cookie', async () => {
@@ -223,6 +226,9 @@ describe('POST /api/login', () => {
     expect(JSON.stringify(res.body)).not.toContain('password');
     expect(setCookieOf(res)).toContain('__Host-sid=');
     expect(sessions.rows.size).toBe(1);
+    // F1.AC5 the cookie expiry is the stored session's expiry (F1.R7).
+    const [stored] = [...sessions.rows.values()];
+    expect(setCookieOf(res)).toContain(`Expires=${new Date(stored?.expiresAt ?? '').toUTCString()}`);
   });
 
   it('F1.AC6 wrong password and unknown email give identical 401 bodies and no cookie', async () => {

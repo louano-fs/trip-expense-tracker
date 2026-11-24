@@ -79,7 +79,6 @@ try {
       register: (input) => register(input, registerDeps),
       login: (input) => login(input, loginDeps),
       endSession: (token) => endSession({ token, store: sessions }),
-      clock,
       cookieSecure: config.cookieSecure,
     },
     trips: { sessions, clock },

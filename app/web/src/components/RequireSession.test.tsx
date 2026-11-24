@@ -84,9 +84,9 @@ describe('F1 RequireSession route guard', () => {
     expect(screen.queryByText(TRIP_TEXT)).toBeNull();
   });
 
-  it('F1.AC10 a live session (404 in F1) shows the trip shell, does not redirect, and calls the trip route', async () => {
+  it('F1.AC10 a live session (200 with trip null in F1) shows the trip shell, does not redirect, and calls the trip route', async () => {
     const onSessionChange = vi.fn();
-    fetchMock.mockResolvedValue(jsonResponse(404, { error: 'Trip not found.' }));
+    fetchMock.mockResolvedValue(jsonResponse(200, { trip: null }));
 
     renderTripRoute(onSessionChange);
 
@@ -97,6 +97,19 @@ describe('F1 RequireSession route guard', () => {
       '/api/trips/1',
       expect.objectContaining({ credentials: 'same-origin' }),
     );
+  });
+
+  it('F1.AC9 a 404 from the trip route shows an error and renders no trip content', async () => {
+    const onSessionChange = vi.fn();
+    fetchMock.mockResolvedValue(jsonResponse(404, { error: 'Trip not found.' }));
+
+    renderTripRoute(onSessionChange);
+
+    const alert = await screen.findByRole('alert');
+    expect(alert.textContent).toBe('Something went wrong. Please try again.');
+    expect(screen.queryByText(TRIP_TEXT)).toBeNull();
+    expect(screen.queryByRole('heading', { name: 'Log in' })).toBeNull();
+    expect(onSessionChange).not.toHaveBeenCalledWith(true);
   });
 
   it('F1.AC9 a failed request shows an error and renders no trip content', async () => {

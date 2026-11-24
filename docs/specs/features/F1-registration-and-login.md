@@ -75,7 +75,7 @@ There are no mock screens yet (`docs/design` does not exist). Screen names below
 ## Data & contract
 **Schema (new):**
 - `users`: `id`, `email` (lowercase, trimmed, unique, max 254), `password_hash` (Argon2id, includes its salt and settings), `created_at` (UTC). The unique constraint on `email` stops two simultaneous registrations from both succeeding (code review; see Test plan).
-- `sessions`: `id` (random, opaque, at least 128 bits), `user_id`, `created_at` (UTC), `expires_at` (UTC, `created_at` + 30 days). A new session ID is issued at every login and registration.
+- `sessions`: `id_hash` (SHA-256 hex of the random session ID, which is at least 128 bits and only lives in the cookie), `user_id`, `created_at` (UTC), `expires_at` (UTC, `created_at` + 30 days). A new session ID is issued at every login and registration.
 - `login_throttle`: `email` (normalized), `consecutive_failures`, `next_allowed_at` (UTC). The plan may store this elsewhere (for example in memory), as long as F1.R13 holds.
 
 **Session cookie** (NIST SP 800-63B-4 §5.1): holds only the opaque session ID. Sent over HTTPS only (`Secure`), `HttpOnly`, `SameSite=Lax`, `Path=/`, `__Host-` prefix, and set to expire at or soon after `expires_at`. The server always checks `expires_at` itself.

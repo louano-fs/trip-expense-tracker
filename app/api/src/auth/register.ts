@@ -1,7 +1,7 @@
 // Registration service (F1.R1 to F1.R5, F1.R12). Plain function: all I/O comes in through deps.
 import { EmailTakenError, type NewUser } from '../db/repositories/users.ts';
 import { isBlockedPassword, type Blocklist } from './blocklist.ts';
-import { createSession, type Clock, type RandomSource, type SessionStore } from './sessions.ts';
+import { startSession, type Clock, type RandomSource, type SessionStore } from './sessions.ts';
 import { normalizeEmail, validateEmail, validatePasswordLength } from './validation.ts';
 
 /** Where a successful registration sends the user (F1.R5). */
@@ -42,7 +42,7 @@ export interface RegisterDeps {
 }
 
 export type RegisterResult =
-  | { ok: true; user: RegisteredUser; token: string; redirectTo: typeof TRIPS_PATH }
+  | { ok: true; user: RegisteredUser; token: string; expiresAt: Date; redirectTo: typeof TRIPS_PATH }
   | { ok: false; status: 400; field: 'email' | 'password'; message: string }
   | { ok: false; status: 409; field: 'email'; message: string };
 
@@ -81,15 +81,21 @@ export async function register(input: RegisterInput, deps: RegisterDeps): Promis
         passwordHash,
         createdAt: deps.clock.now().toISOString(),
       });
-      const token = createSession({
+      const session = startSession({
         userId: user.id,
         store: deps.sessions,
         clock: deps.clock,
         random: deps.random,
       });
-      return { user, token };
+      return { user, session };
     });
-    return { ok: true, user: created.user, token: created.token, redirectTo: TRIPS_PATH };
+    return {
+      ok: true,
+      user: created.user,
+      token: created.session.token,
+      expiresAt: created.session.expiresAt,
+      redirectTo: TRIPS_PATH,
+    };
   } catch (err: unknown) {
     if (err instanceof EmailTakenError) {
       return { ok: false, status: 409, field: 'email', message: REGISTER_MESSAGES.emailTaken };

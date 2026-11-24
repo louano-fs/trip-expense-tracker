@@ -98,7 +98,7 @@ describe('GET /api/trips/:id (placeholder)', () => {
     expect(res.body).toEqual({ error: 'Unauthorized', reason: 'expired' });
   });
 
-  it('F1.AC10 with a live session returns 404, since F1 has no trips yet', () => {
+  it('F1.AC10 with a live session returns 200 with trip null, since F1 has no trips yet', () => {
     const sessions = memorySessionStore();
     const token = createSession({ userId: 1, store: sessions, clock, random });
     const route = tripPlaceholderRoute({ sessions, clock });
@@ -106,8 +106,8 @@ describe('GET /api/trips/:id (placeholder)', () => {
 
     route(request(`__Host-sid=${token}`), res);
 
-    expect(res.statusCode).toBe(404);
-    expect(res.body).toEqual({ error: 'Trip not found.' });
+    expect(res.statusCode).toBe(200);
+    expect(res.body).toEqual({ trip: null });
   });
 });
 

@@ -2,7 +2,7 @@
 import type { UserRecord } from '../db/repositories/users.ts';
 import { DUMMY_HASH } from './password.ts';
 import { userView, type UserView } from './responses.ts';
-import { createSession, type Clock, type RandomSource, type SessionStore } from './sessions.ts';
+import { startSession, type Clock, type RandomSource, type SessionStore } from './sessions.ts';
 import type { LoginThrottle } from './throttle.ts';
 import { normalizeEmail } from './validation.ts';
 
@@ -60,7 +60,7 @@ export interface LoginDeps {
 }
 
 export type LoginResult =
-  | { ok: true; user: UserView; token: string }
+  | { ok: true; user: UserView; token: string; expiresAt: Date }
   | { ok: false; status: 401; message: typeof LOGIN_MESSAGES.wrongCredentials }
   | { ok: false; status: 429; retryAfterSeconds: number; message: string };
 
@@ -92,14 +92,14 @@ export async function login(input: LoginInput, deps: LoginDeps): Promise<LoginRe
   }
 
   // The throttle reset and the session row are written in one transaction (project rules).
-  const token = deps.transaction(() => {
+  const session = deps.transaction(() => {
     deps.throttle.recordSuccess(email);
-    return createSession({
+    return startSession({
       userId: user.id,
       store: deps.sessions,
       clock: deps.clock,
       random: deps.random,
     });
   });
-  return { ok: true, user: userView(user), token };
+  return { ok: true, user: userView(user), token: session.token, expiresAt: session.expiresAt };
 }

@@ -54,8 +54,8 @@ export function RequireSession({ load, onSessionChange, children }: RequireSessi
           onChangeRef.current?.(false);
           return;
         }
-        // 404 means a live session in F1, since there are no trips yet (F1.AC10).
-        if (response.ok || response.status === 404) {
+        // Only a 2xx means a live session. Any other status (including 404) is an error (F1.AC9, F1.AC10).
+        if (response.ok) {
           setOutcome({ kind: 'live' });
           onChangeRef.current?.(true);
           return;
