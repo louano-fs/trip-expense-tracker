@@ -17,3 +17,6 @@ docs/activities-outputs/session-logs/.hook-errors.log
 *.suo
 .DS_Store
 Thumbs.db
+
+# Implement-feature run counts (local bookkeeping, never committed)
+.claude/state/
