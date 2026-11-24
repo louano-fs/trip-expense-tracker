@@ -168,23 +168,23 @@ describe('F2.R9 deleteTripById repository', () => {
   it('F2.R9 deleteTripById uses a ? placeholder and passes the trip ID as a parameter', () => {
     const db = new FakeDb();
 
-    deleteTripById(db, TRIP_ID);
+    deleteTripById(db, TRIP_ID, OWNER_ID);
 
-    expectParameterised(db.lastCall(), [TRIP_ID]);
-    expect(db.lastCall().sql).toContain('DELETE FROM trips WHERE id = ?');
+    expectParameterised(db.lastCall(), [TRIP_ID, OWNER_ID]);
+    expect(db.lastCall().sql).toContain('DELETE FROM trips WHERE id = ? AND owner_id = ?');
   });
 
   it('F2.R9 deleteTripById returns true when a row was removed', () => {
     const db = new FakeDb();
     db.runResult = { changes: 1, lastInsertRowid: 0 };
 
-    expect(deleteTripById(db, TRIP_ID)).toBe(true);
+    expect(deleteTripById(db, TRIP_ID, OWNER_ID)).toBe(true);
   });
 
   it('F2.AC12 deleteTripById returns false when no row matched', () => {
     const db = new FakeDb();
     db.runResult = { changes: 0, lastInsertRowid: 0 };
 
-    expect(deleteTripById(db, TRIP_ID)).toBe(false);
+    expect(deleteTripById(db, TRIP_ID, OWNER_ID)).toBe(false);
   });
 });

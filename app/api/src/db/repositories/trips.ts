@@ -58,12 +58,12 @@ export function findTripForOwner(db: Db, id: number, ownerId: number): TripRecor
 }
 
 /**
- * Deletes one trip by ID. Child rows (people, expenses, payments) are removed by ON DELETE CASCADE
- * on trips.id (F2.R9). The caller checks ownership first with findTripForOwner, and runs this in a
+ * Deletes one trip by ID, only when it belongs to the owner (F1.R11). Child rows (people, expenses,
+ * payments) are removed by ON DELETE CASCADE on trips.id (F2.R9). The caller runs this in a
  * transaction. Returns true when a row was removed.
  */
-export function deleteTripById(db: Db, id: number): boolean {
-  const result = db.run('DELETE FROM trips WHERE id = ?', [id]);
+export function deleteTripById(db: Db, id: number, ownerId: number): boolean {
+  const result = db.run('DELETE FROM trips WHERE id = ? AND owner_id = ?', [id, ownerId]);
   return result.changes > 0;
 }
 

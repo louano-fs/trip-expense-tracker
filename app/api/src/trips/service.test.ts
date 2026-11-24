@@ -29,15 +29,15 @@ class FakeTripStore implements TripStore {
     return this.rows.filter((row) => row.owner_id === ownerId).map((row) => ({ ...row }));
   }
 
-  findTrip(id: number): StoredTrip | undefined {
-    const row = this.rows.find((r) => r.id === id);
+  findTrip(id: number, ownerId: number): StoredTrip | undefined {
+    const row = this.rows.find((r) => r.id === id && r.owner_id === ownerId);
     return row === undefined ? undefined : { ...row };
   }
 
-  deleteTrip(id: number): boolean {
+  deleteTrip(id: number, ownerId: number): boolean {
     this.deleteCalls.push({ id, inTransaction: this.inTransaction });
     const before = this.rows.length;
-    this.rows = this.rows.filter((row) => row.id !== id);
+    this.rows = this.rows.filter((row) => !(row.id === id && row.owner_id === ownerId));
     return this.rows.length < before;
   }
 
@@ -85,7 +85,7 @@ describe('F2.AC1 creating a trip', () => {
     );
     expect(result.ok).toBe(true);
     if (result.ok) {
-      expect(store.findTrip(result.trip.id)?.name).toBe('Lisbon');
+      expect(store.findTrip(result.trip.id, USER_A)?.name).toBe('Lisbon');
     }
   });
 

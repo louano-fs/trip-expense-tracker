@@ -107,7 +107,7 @@ Reused from F1: `db/open.ts`, `db/migrate.ts`, `logger.ts`, `auth/guards.ts` (`a
 - **Builds:** F2.R1, F2.R5, F2.R8 (API part), F2.R11, F2.R12 (404 body)
 - **Proves:** F2.AC9 (API), F2.AC8 (HTTP 404), F2.AC12 (HTTP 404), F2.AC13 (response bodies), F2.AC1 (201 response), F1.AC10 (moved from the placeholder test)
 - **Depends on:** F2.T3, F1.T9, F1.T10
-- **Files:** `app/api/src/http/routes/trips.ts`, `app/api/src/http/routes/trips.test.ts`, `app/api/src/http/app.ts`, `app/api/src/index.ts`, `app/api/src/http/routes/trips-placeholder.ts` (deleted), `app/api/src/http/routes/trips-placeholder.test.ts` (deleted), `docs/specs/api.md`
+- **Files:** `app/api/src/http/routes/trips.ts`, `app/api/src/http/routes/trips.test.ts`, `app/api/src/http/app.ts`, `app/api/src/index.ts`, `app/api/src/http/routes/trips-placeholder.ts` (deleted), `app/api/src/http/routes/trips-placeholder.test.ts` (deleted), `app/api/src/db/repositories/trips.ts` (add `findTripById(db, id)`, which returns the trip with its `ownerId`, for the store adapter), `app/api/src/db/repositories/trips.test.ts` (test for it), `docs/specs/api.md`
 - **Steps:**
   1. Handlers `listTripsHandler`, `createTripHandler`, `getTripHandler`, `deleteTripHandler`. Each runs `apiGuard` first and returns `401` with no data when logged out.
   2. `POST` returns `201` with `{ trip }` on success, `400` with `{ field: 'name', message }` for a bad name. `GET /:id` returns `200` `{ trip }`. `DELETE /:id` returns `204`. Missing or other-user trips return `404` with the same body for both.

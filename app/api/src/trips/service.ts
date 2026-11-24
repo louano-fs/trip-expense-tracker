@@ -78,7 +78,7 @@ export function getTrip(
   input: { ownerId: number; tripId: number },
   deps: TripDeps,
 ): TripLookupResult {
-  const trip = deps.store.findTrip(input.tripId);
+  const trip = deps.store.findTrip(input.tripId, input.ownerId);
   if (trip === undefined || ownsTrip(trip, input.ownerId) === 'not-found') {
     return { ok: false, reason: 'not-found' };
   }
@@ -94,11 +94,11 @@ export function deleteTrip(
   deps: TripDeps,
 ): DeleteTripResult {
   return deps.store.transaction<DeleteTripResult>(() => {
-    const trip = deps.store.findTrip(input.tripId);
+    const trip = deps.store.findTrip(input.tripId, input.ownerId);
     if (ownsTrip(trip, input.ownerId) === 'not-found') {
       return { ok: false, reason: 'not-found' };
     }
-    deps.store.deleteTrip(input.tripId);
+    deps.store.deleteTrip(input.tripId, input.ownerId);
     return { ok: true };
   });
 }

@@ -6,6 +6,13 @@ import { applyMigrations, loadMigrations, MIGRATIONS_DIR } from './db/migrate.ts
 import { findUserByEmail, insertUser, type NewUser } from './db/repositories/users.ts';
 import { deleteSession, findSessionByHash, insertSession } from './db/repositories/sessions.ts';
 import { getThrottle, saveThrottle } from './db/repositories/throttle.ts';
+import {
+  deleteTripById,
+  findTripForOwner,
+  insertTrip,
+  listTripsByOwner,
+} from './db/repositories/trips.ts';
+import type { TripStore } from './trips/store.ts';
 import { buildBlocklist, STARTER_BLOCKLIST } from './auth/blocklist.ts';
 import { hashPassword, verifyPassword } from './auth/password.ts';
 import { register } from './auth/register.ts';
@@ -13,6 +20,7 @@ import { login } from './auth/login.ts';
 import { createLoginThrottle } from './auth/throttle.ts';
 import { endSession, type Clock, type RandomSource, type SessionStore } from './auth/sessions.ts';
 import { createApp } from './http/app.ts';
+import { tripRouteService } from './http/routes/trips.ts';
 
 const logger = createLogger();
 
@@ -73,6 +81,28 @@ try {
     transaction,
   };
 
+  // Trip store adapter: maps the trip repository onto the service store. Lookups filter by owner in the
+  // query (F1.R11, F2.R11), and the service checks the owner again. The delete runs in one transaction (F2.R9).
+  const tripStore: TripStore = {
+    insertTrip: (trip) => insertTrip(db, trip),
+    listTripsByOwner: (ownerId) =>
+      listTripsByOwner(db, ownerId).map((trip) => ({
+        id: trip.id,
+        owner_id: ownerId,
+        name: trip.name,
+        createdAt: trip.createdAt,
+      })),
+    findTrip: (id, ownerId) => {
+      const trip = findTripForOwner(db, id, ownerId);
+      if (trip === undefined) {
+        return undefined;
+      }
+      return { id: trip.id, owner_id: ownerId, name: trip.name, createdAt: trip.createdAt };
+    },
+    deleteTrip: (id, ownerId) => deleteTripById(db, id, ownerId),
+    transaction,
+  };
+
   const app = createApp({
     logger,
     auth: {
@@ -81,7 +111,11 @@ try {
       endSession: (token) => endSession({ token, store: sessions }),
       cookieSecure: config.cookieSecure,
     },
-    trips: { sessions, clock },
+    trips: {
+      sessions,
+      clock,
+      service: tripRouteService({ store: tripStore, clock }),
+    },
   });
 
   app.listen(config.port, () => {

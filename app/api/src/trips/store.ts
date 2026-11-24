@@ -25,10 +25,16 @@ export interface TripStore {
   insertTrip(trip: NewStoredTrip): number;
   /** Returns only the trips owned by `ownerId` (F2.R11). Order is not guaranteed; the service sorts. */
   listTripsByOwner(ownerId: number): StoredTrip[];
-  /** Returns the trip with this ID, whoever owns it, or undefined. The service checks ownership. */
-  findTrip(id: number): StoredTrip | undefined;
-  /** Deletes the trip with this ID. Returns true when a row was removed. Child rows cascade (F2.R9). */
-  deleteTrip(id: number): boolean;
+  /**
+   * Returns the trip with this ID only if `ownerId` owns it (F1.R11, F2.R11). Returns undefined for
+   * a missing trip and for another user's trip. The service checks ownership again as a second guard.
+   */
+  findTrip(id: number, ownerId: number): StoredTrip | undefined;
+  /**
+   * Deletes the trip with this ID, only when `ownerId` owns it. Returns true when a row was removed.
+   * Child rows cascade (F2.R9).
+   */
+  deleteTrip(id: number, ownerId: number): boolean;
   /** Runs `work` in one database transaction and returns its result (F2.R9, project-rules.md). */
   transaction<T>(work: () => T): T;
 }
