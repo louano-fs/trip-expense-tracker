@@ -150,6 +150,6 @@ describe('F1.R7 migrations (data model support)', () => {
   it('F1.R7 loadMigrations returns the SQL files sorted by name', () => {
     const loaded = loadMigrations(MIGRATIONS_DIR);
 
-    expect(loaded.map((m) => m.id)).toEqual(['001-auth']);
+    expect(loaded.map((m) => m.id)).toEqual(['001-auth', '002-trips']);
   });
 });

@@ -43,8 +43,21 @@ Indexes: `sessions_user_id_idx` on `(user_id)`; `sessions_expires_at_idx` on `(e
 | `consecutive_failures` | INTEGER, not null, default 0 | Never negative (`CHECK`) |
 | `next_allowed_at` | TEXT, nullable | UTC ISO 8601; null when no wait applies |
 
+## Migration `002-trips` (F2)
+
+### `trips`
+| Column | Type | Notes |
+|---|---|---|
+| `id` | INTEGER, primary key | Row id |
+| `owner_id` | INTEGER, not null, FK to `users.id` | `ON DELETE CASCADE`; indexed (`trips_owner_id_idx`) |
+| `name` | TEXT, not null | `CHECK (length(name) BETWEEN 1 AND 100)`; no unique constraint (F2.R3) |
+| `created_at` | TEXT, not null | UTC ISO 8601 |
+
+Rule for later migrations: every child table added in F3 to F6 references `trips.id` with `ON DELETE CASCADE`.
+
 ## Repositories
 Functions in `app/api/src/db/repositories/` take a `Db` and use `?` placeholders only:
 - `users.ts`: `insertUser`, `findUserByEmail`. `insertUser` throws `EmailTakenError` on a unique violation of `users.email`.
 - `sessions.ts`: `insertSession`, `findSessionByHash`, `deleteSession`.
 - `throttle.ts`: `getThrottle`, `saveThrottle`, `clearThrottle`.
+- `trips.ts`: `insertTrip`, `listTripsByOwner`, `findTripForOwner`, `deleteTripById`. The list and find functions always filter by `owner_id`.

@@ -246,3 +246,4 @@ None. The spec has no open questions, and every choice above is a clear best cho
 ## Decisions log
 - 2026-11-15: Plan created as Draft from the Approved F2 spec (spec version 2026-11-15).
 - 2026-11-15: Plan approved by the user. This includes the T4 removal of `trips-placeholder.test.ts`, with its F1.AC10 assertion moved unchanged into `trips.test.ts`; the user approved the plan as written.
+- 2026-11-24: F2.T2. `migrate.test.ts` expected only `001-auth` from `loadMigrations`; it now expects `['001-auth', '002-trips']`. Approved by the user. `trips.name` also has a length `CHECK` (1 to 100), matching `users`.
