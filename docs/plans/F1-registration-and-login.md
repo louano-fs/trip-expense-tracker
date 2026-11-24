@@ -70,7 +70,7 @@ Reused by later features: `auth/guards.ts` (`ownsTrip`, `apiGuard`, `pageGuard`)
 - **Builds:** none (foundation for all requirements)
 - **Proves:** none. Supports F1.AC12 and the "no sensitive data in logs" check by setting up redaction.
 - **Depends on:** none
-- **Files:** `app/api/package.json`, `app/api/tsconfig.json`, `app/api/vitest.config.ts`, `app/api/src/config.ts`, `app/api/src/config.test.ts`, `app/api/src/logger.ts`, `app/api/src/logger.test.ts`, `app/api/src/index.ts`, `app/web/package.json`, `app/web/tsconfig.json`, `app/web/vite.config.ts`, `app/web/vitest.config.ts`, `app/web/src/main.tsx`, `app/web/src/App.test.tsx`, `CLAUDE.md` (library list only), `.gitignore` (add `*.sqlite`, `app/api/data/`)
+- **Files:** `app/api/package.json`, `app/api/tsconfig.json`, `app/api/vitest.config.ts`, `app/api/src/config.ts`, `app/api/src/config.test.ts`, `app/api/src/logger.ts`, `app/api/src/logger.test.ts`, `app/api/src/index.ts`, `app/web/package.json`, `app/web/tsconfig.json`, `app/web/vite.config.ts`, `app/web/vitest.config.ts`, `app/web/src/main.tsx`, `app/web/src/App.tsx`, `app/web/index.html`, `app/web/src/App.test.tsx`, `CLAUDE.md` (library list only), `.gitignore` (add `*.sqlite`, `app/api/data/`)
 - **Steps:**
   1. In `app/api`, run `npm init`, set `engines.node` to the current LTS, install the listed runtime libraries and dev libraries, add scripts `dev`, `test` (`vitest run`), `typecheck` (`tsc --noEmit`).
   2. Set `strict: true` in `tsconfig.json`. Add a `vitest.config.ts` with the `node` environment.
