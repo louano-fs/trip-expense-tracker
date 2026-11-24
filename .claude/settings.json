@@ -1,5 +1,27 @@
 {
   "model": "haiku",
+  "permissions": {
+    "allow": [
+      "Bash(cd app/api)",
+      "Bash(cd app/web)",
+      "Bash(npm test)",
+      "Bash(npm run typecheck)",
+      "Bash(npm install)"
+    ],
+    "deny": [
+      "Bash(git commit:*)",
+      "Bash(git push:*)",
+      "Bash(git merge:*)",
+      "Bash(git rebase:*)",
+      "Bash(git reset:*)",
+      "Bash(git tag:*)",
+      "Bash(npm publish:*)",
+      "Bash(npx:*)",
+      "Bash(curl:*)",
+      "Bash(wget:*)",
+      "Bash(rm:*)"
+    ]
+  },
   "hooks": {
     "Stop": [
       {
