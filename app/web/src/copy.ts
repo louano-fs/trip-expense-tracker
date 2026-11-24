@@ -32,8 +32,15 @@ export const copy = {
   // emailTaken is split around the "Log in" link on the Register screen.
   emailTakenBefore: 'An account with this email already exists. ',
   emailTakenAfter: ' instead.',
+  // Added in F2.T6 for the Trips list screen (new copy, for review). Wording from F2-trips.md "States & errors".
   tripsHeading: 'Trips',
-  tripsPlaceholder: 'Your trips will show up here soon.',
+  tripsLoading: 'Loading trips…',
+  tripsEmpty: 'No trips yet. Create your first trip to start tracking shared costs.',
+  tripsLoadFailed: "Couldn't load your trips.",
+  tryAgain: 'Try again',
+  newTripButton: 'New trip',
+  // Row text under the trip name, e.g. "Created 15 Nov 2026".
+  tripCreated: (date: string) => `Created ${date}`,
 } as const;
 
 // Builds the throttle message. The wait is rounded up, as the spec requires:
