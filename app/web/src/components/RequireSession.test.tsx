@@ -96,7 +96,7 @@ describe('F1 RequireSession route guard', () => {
     expect(screen.queryByRole('heading', { name: 'Log in' })).toBeNull();
     expect(onSessionChange).toHaveBeenCalledWith(true);
     expect(fetchMock).toHaveBeenCalledWith(
-      '/api/trips/1',
+      '/api/trips',
       expect.objectContaining({ credentials: 'same-origin' }),
     );
   });

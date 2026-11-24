@@ -22,17 +22,18 @@ export interface TripPageProps {
   onSessionChange?: (live: boolean) => void;
 }
 
-// Calls the guarded trip route (F1.R10). Only the status is used here, so a 401 keeps the
-// expired notice from RequireSession (F1.AC23). Defined at module level for a stable identity.
-function fetchTrip(id: string): Promise<Response> {
-  return fetch(`/api/trips/${encodeURIComponent(id)}`, { credentials: 'same-origin' });
+// Login check for the trip page (F1.R10). Calls the guarded list route, which answers 200 for a
+// live session, so a missing trip (404 from /api/trips/:id) is handled by getTrip, not the gate.
+// A 401 keeps the expired notice from RequireSession (F1.AC23). Defined at module level for a stable identity.
+function fetchTrip(): Promise<Response> {
+  return fetch('/api/trips', { credentials: 'same-origin' });
 }
 
 // Trip page for /trips/:id (F2.R7, F2.R12). It sits behind RequireSession, so the trip
 // request only starts once the gate has answered with a live session (F2.AC9).
 export function TripPage({ onSessionChange }: TripPageProps) {
   const { id = '' } = useParams();
-  const load = useCallback(() => fetchTrip(id), [id]);
+  const load = useCallback(() => fetchTrip(), []);
   return (
     <RequireSession load={load} onSessionChange={onSessionChange}>
       <TripScreen id={id} onSessionChange={onSessionChange} />
