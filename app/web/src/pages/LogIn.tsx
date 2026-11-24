@@ -1,5 +1,5 @@
 import { useRef, useState, type FormEvent } from 'react';
-import { Link, useNavigate } from 'react-router-dom';
+import { Link, useLocation, useNavigate } from 'react-router-dom';
 import { ApiError, login } from '../api/client';
 import { PasswordField } from '../components/PasswordField';
 import { copy, throttledMessage } from '../copy';
@@ -30,10 +30,22 @@ function formErrorFor(error: unknown): string {
   return copy.genericError;
 }
 
+// Reads the expired notice from the redirect state set by RequireSession (F1.AC23).
+function hasExpiredNotice(state: unknown): boolean {
+  return typeof state === 'object' && state !== null && (state as { notice?: unknown }).notice === 'expired';
+}
+
 // Log in screen (F1.R6). After a successful login it always goes to Trips,
 // even when the visitor was redirected here from another page (F1.AC13).
-export function LogIn() {
+export interface LogInProps {
+  /** Called after a successful login so the app knows a session is live. */
+  onLoggedIn?: () => void;
+}
+
+export function LogIn({ onLoggedIn }: LogInProps = {}) {
   const navigate = useNavigate();
+  const location = useLocation();
+  const expired = hasExpiredNotice(location.state);
   const emailRef = useRef<HTMLInputElement>(null);
   const passwordRef = useRef<HTMLInputElement>(null);
   const [email, setEmail] = useState('');
@@ -56,6 +68,7 @@ export function LogIn() {
     setBusy(true);
     try {
       await login(email, password);
+      onLoggedIn?.();
       navigate('/trips', { replace: true });
     } catch (error) {
       // Keep the typed email, clear the password, and move focus to it.
@@ -70,6 +83,7 @@ export function LogIn() {
   return (
     <section>
       <h2>{copy.logInHeading}</h2>
+      {expired && <p role="status">{copy.sessionExpired}</p>}
       <form onSubmit={handleSubmit} noValidate>
         {errors.form !== undefined && (
           <p role="alert" id="login-form-error">

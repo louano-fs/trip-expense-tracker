@@ -82,6 +82,7 @@ try {
       clock,
       cookieSecure: config.cookieSecure,
     },
+    trips: { sessions, clock },
   });
 
   app.listen(config.port, () => {

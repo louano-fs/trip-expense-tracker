@@ -116,4 +116,18 @@ describe('F1 LogIn screen', () => {
     expect(document.activeElement).toBe(email);
     expect(fetchMock).not.toHaveBeenCalled();
   });
+
+  it('F1.AC23 after an expired session, the Log in screen shows the expired notice', () => {
+    renderLogIn({ notice: 'expired' });
+
+    expect(screen.getByText('Your session has expired. Please log in again.')).toBeTruthy();
+    expect(screen.getByRole('heading', { name: 'Log in' })).toBeTruthy();
+  });
+
+  it('F1.AC9 a redirect with no notice shows the Log in screen without the expired notice', () => {
+    renderLogIn();
+
+    expect(screen.queryByText('Your session has expired. Please log in again.')).toBeNull();
+    expect(screen.getByRole('heading', { name: 'Log in' })).toBeTruthy();
+  });
 });

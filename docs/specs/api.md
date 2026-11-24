@@ -47,6 +47,17 @@ Set by register and login (F1.R7):
 ### Logged-out trip requests (F1.R10)
 Any trip endpoint (from F2 on) called with no cookie or an expired session returns `401` with no trip data. The trip endpoints themselves are added in F2.
 
+### GET /api/trips/:id (placeholder in F1)
+A guarded placeholder that proves the login gate (F1.R10). It reads no trip data. F2 replaces it with the real trip endpoint.
+
+| Status | When | Body |
+|---|---|---|
+| 401 | No session cookie, or the cookie is not the session cookie | `{ "error": "Unauthorized" }`, with no `reason` key |
+| 401 | A session cookie was sent, but no live session matched (unknown, or 30 days reached) | `{ "error": "Unauthorized", "reason": "expired" }` |
+| 404 | Live session (F1 has no trips yet) | `{ "error": "Trip not found." }` |
+
+`reason` is only ever `"expired"`, and only on a 401 (F1.R7, F1.AC23). The web app uses it to show the expired notice on the Log in screen. The 401 body never contains trip data (F1.AC10).
+
 ## Errors
 
 Unexpected failures return `500` with `{ "error": "Something went wrong. Please try again." }`. The request body and cookies are never logged.
