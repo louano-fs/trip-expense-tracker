@@ -87,15 +87,15 @@ Reused by later features: `auth/guards.ts` (`ownsTrip`, `apiGuard`, `pageGuard`)
 - **Builds:** F1.R2, F1.R3 (length and no trimming), F1.R12
 - **Proves:** F1.AC2 (email normalization part), F1.AC3, F1.AC4, F1.AC16, F1.AC17
 - **Depends on:** F1.T1
-- **Files:** `app/api/src/auth/validation.ts`, `app/api/src/auth/validation.test.ts`, `app/api/src/auth/blocklist.ts`, `app/api/src/auth/blocklist.test.ts`, `app/api/src/auth/blocklist.txt`, `app/api/src/auth/blocklist.README.md`
+- **Files:** `app/api/src/auth/validation.ts`, `app/api/src/auth/validation.test.ts`, `app/api/src/auth/blocklist.ts`, `app/api/src/auth/blocklist.test.ts`, `app/api/src/auth/blocklist.README.md`
 - **Steps:**
   1. Write `normalizeEmail(raw)`: trim, lowercase. `validateEmail(normalized)`: regex format check, length ≤ 254. Returns `{ ok: true, email }` or `{ ok: false, field: 'email', message }`.
   2. Write `validatePasswordLength(password)`: NFC normalize (without trimming), count code points; 15 ≤ n ≤ 128. Return the field error with the spec's exact copy.
-  3. Download the SecLists common-password file once (a person reviews the downloaded file before it is committed). Keep entries of 15+ characters, lowercase them, add the app words ("trip expense tracker", "trip expense", "expense tracker"). Save as `blocklist.txt`, one entry per line. Record the source commit and licence in `blocklist.README.md`.
+  3. Add a short starter list of common passwords as an exported constant in `blocklist.ts`: about 20 entries of 15+ characters, lowercased, including the app words ("trip expense tracker", "expense tracker"; "trip expense" is left out because it is under 15 characters). No file download. Record in `blocklist.README.md` that the list is a small starter set written for this project, and that a full list is a later follow-up.
   4. Write `isBlockedPassword(password, email, list)`: compares case-insensitively with the list, with the email, and with the part before `@`, after NFC normalization.
-- **Tests:** `validation.test.ts`: F1.AC2 (`'  SAM@Mail.com '` normalizes to `sam@mail.com`), F1.AC4 (no `@`, no domain, 255-character email rejected; a valid one accepted), F1.AC3 (14 rejected, 15 accepted), F1.AC16 (128 accepted, 129 rejected). `blocklist.test.ts`: F1.AC17 (blocked entry in any case; the email and the part before `@` padded to 15 characters are blocked; a non-listed password passes). Fakes: a small in-test list passed as argument; the real `blocklist.txt` is loaded only in `blocklist.test.ts` via `readFileSync`... (reads a file, not the network, so allowed) — or the list is loaded in T6 at start-up. Use the small fake list.
-- **Done when:** `npm test` passes; the bundled `blocklist.txt` has no entry shorter than 15 characters.
-- **Needs person review:** yes (authentication: password rules). Person also reads the downloaded blocklist before it is committed.
+- **Tests:** `validation.test.ts`: F1.AC2 (`'  SAM@Mail.com '` normalizes to `sam@mail.com`), F1.AC4 (no `@`, no domain, 255-character email rejected; a valid one accepted), F1.AC3 (14 rejected, 15 accepted), F1.AC16 (128 accepted, 129 rejected). `blocklist.test.ts`: F1.AC17 (blocked entry in any case; the email and the part before `@` padded to 15 characters are blocked; a non-listed password passes). Fakes: a small in-test list passed as argument. `blocklist.test.ts` also checks that every entry in the starter constant is 15+ characters.
+- **Done when:** `npm test` and `npm run typecheck` pass in `app/api`; every entry in the starter list is 15+ characters.
+- **Needs person review:** yes (authentication: password rules).
 - **Commit:** `F1.T2: Add email and password rules and blocklist`
 
 ### F1.T3 — Password hashing with Argon2id
