@@ -3,6 +3,7 @@ import { Navigate } from 'react-router-dom';
 import { listTrips, type Trip } from '../api/trips';
 import { ApiError } from '../api/client';
 import { TripList } from '../components/TripList';
+import { NewTripForm } from '../components/NewTripForm';
 import { RequireSession } from '../components/RequireSession';
 import { copy } from '../copy';
 
@@ -42,6 +43,10 @@ function TripsScreen({ onSessionChange }: TripsScreenProps) {
   const [state, setState] = useState<ListState>({ kind: 'loading' });
   const [attempt, setAttempt] = useState(0);
   const retryRef = useRef<HTMLButtonElement>(null);
+  const [formOpen, setFormOpen] = useState(false);
+  const newTripRef = useRef<HTMLButtonElement>(null);
+  // Set when the form is cancelled, so focus returns to the "New trip" button (accessibility).
+  const returnFocusRef = useRef(false);
   // Keeps the latest callback without re-running the request when its identity changes.
   const onChangeRef = useRef(onSessionChange);
   useEffect(() => {
@@ -81,8 +86,21 @@ function TripsScreen({ onSessionChange }: TripsScreenProps) {
     if (state.kind === 'failed') retryRef.current?.focus();
   }, [state.kind]);
 
+  // When the form closes without creating a trip, focus goes back to "New trip".
+  useEffect(() => {
+    if (!formOpen && returnFocusRef.current) {
+      returnFocusRef.current = false;
+      newTripRef.current?.focus();
+    }
+  }, [formOpen]);
+
   if (state.kind === 'ended') {
     return <Navigate to="/login" replace />;
+  }
+
+  function closeForm() {
+    returnFocusRef.current = true;
+    setFormOpen(false);
   }
 
   return (
@@ -97,14 +115,20 @@ function TripsScreen({ onSessionChange }: TripsScreenProps) {
           </button>
         </>
       )}
-      {state.kind === 'loaded' && state.trips.length === 0 && (
+      {state.kind === 'loaded' && (
         <>
-          <p>{copy.tripsEmpty}</p>
-          {/* Wired to the New trip form in F2.T7. For now it renders and does nothing. */}
-          <button type="button">{copy.newTripButton}</button>
+          {state.trips.length === 0 && <p>{copy.tripsEmpty}</p>}
+          {/* One "New trip" button, shown in the empty state and the list (F2.R6, F2 screen 1). It is hidden while the form is open. */}
+          {formOpen ? (
+            <NewTripForm onCancel={closeForm} />
+          ) : (
+            <button ref={newTripRef} type="button" onClick={() => setFormOpen(true)}>
+              {copy.newTripButton}
+            </button>
+          )}
+          {state.trips.length > 0 && <TripList trips={state.trips} />}
         </>
       )}
-      {state.kind === 'loaded' && state.trips.length > 0 && <TripList trips={state.trips} />}
     </section>
   );
 }
