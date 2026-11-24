@@ -5,8 +5,8 @@ import { LogIn } from '../pages/LogIn';
 import { TripPage } from '../pages/TripPage';
 import { RequireSession } from './RequireSession';
 
-// Text that only the trip shell renders. The tests check it never appears on a 401.
-const TRIP_TEXT = 'Trip details will show up here soon.';
+// A trip name that only the trip page renders. The tests check it never appears on a 401.
+const TRIP_NAME = 'Lisbon';
 const EXPIRED_TEXT = 'Your session has expired. Please log in again.';
 
 // Builds a JSON response for the mocked fetch. No real network is used.
@@ -49,7 +49,7 @@ describe('F1 RequireSession route guard', () => {
     renderTripRoute(onSessionChange);
 
     expect(await screen.findByRole('heading', { name: 'Log in' })).toBeTruthy();
-    expect(screen.queryByText(TRIP_TEXT)).toBeNull();
+    expect(screen.queryByRole('heading', { name: TRIP_NAME })).toBeNull();
     expect(screen.queryByText(EXPIRED_TEXT)).toBeNull();
     expect(onSessionChange).toHaveBeenCalledWith(false);
   });
@@ -59,7 +59,7 @@ describe('F1 RequireSession route guard', () => {
 
     renderTripRoute();
 
-    expect(screen.queryByText(TRIP_TEXT)).toBeNull();
+    expect(screen.queryByRole('heading', { name: TRIP_NAME })).toBeNull();
     expect(screen.queryByRole('heading', { name: 'Log in' })).toBeNull();
     expect(fetchMock).toHaveBeenCalledTimes(1);
   });
@@ -71,7 +71,7 @@ describe('F1 RequireSession route guard', () => {
 
     expect(await screen.findByText(EXPIRED_TEXT)).toBeTruthy();
     expect(screen.getByRole('heading', { name: 'Log in' })).toBeTruthy();
-    expect(screen.queryByText(TRIP_TEXT)).toBeNull();
+    expect(screen.queryByRole('heading', { name: TRIP_NAME })).toBeNull();
   });
 
   it('F1.AC9 a 401 whose body is not JSON redirects without the expired notice', async () => {
@@ -81,16 +81,18 @@ describe('F1 RequireSession route guard', () => {
 
     expect(await screen.findByRole('heading', { name: 'Log in' })).toBeTruthy();
     expect(screen.queryByText(EXPIRED_TEXT)).toBeNull();
-    expect(screen.queryByText(TRIP_TEXT)).toBeNull();
+    expect(screen.queryByRole('heading', { name: TRIP_NAME })).toBeNull();
   });
 
-  it('F1.AC10 a live session (200 with trip null in F1) shows the trip shell, does not redirect, and calls the trip route', async () => {
+  it('F1.AC10 a live session shows the trip page, does not redirect, and calls the trip route', async () => {
     const onSessionChange = vi.fn();
-    fetchMock.mockResolvedValue(jsonResponse(200, { trip: null }));
+    fetchMock.mockResolvedValue(
+      jsonResponse(200, { trip: { id: 1, name: TRIP_NAME, createdAt: '2026-11-15T10:00:00.000Z' } }),
+    );
 
     renderTripRoute(onSessionChange);
 
-    expect(await screen.findByText(TRIP_TEXT)).toBeTruthy();
+    expect(await screen.findByRole('heading', { name: TRIP_NAME })).toBeTruthy();
     expect(screen.queryByRole('heading', { name: 'Log in' })).toBeNull();
     expect(onSessionChange).toHaveBeenCalledWith(true);
     expect(fetchMock).toHaveBeenCalledWith(
@@ -107,7 +109,7 @@ describe('F1 RequireSession route guard', () => {
 
     const alert = await screen.findByRole('alert');
     expect(alert.textContent).toBe('Something went wrong. Please try again.');
-    expect(screen.queryByText(TRIP_TEXT)).toBeNull();
+    expect(screen.queryByRole('heading', { name: TRIP_NAME })).toBeNull();
     expect(screen.queryByRole('heading', { name: 'Log in' })).toBeNull();
     expect(onSessionChange).not.toHaveBeenCalledWith(true);
   });
@@ -119,7 +121,7 @@ describe('F1 RequireSession route guard', () => {
 
     const alert = await screen.findByRole('alert');
     expect(alert.textContent).toBe('Something went wrong. Please try again.');
-    expect(screen.queryByText(TRIP_TEXT)).toBeNull();
+    expect(screen.queryByRole('heading', { name: TRIP_NAME })).toBeNull();
   });
 
   it('F1.AC9 RequireSession passes children through once the load resolves live', async () => {
