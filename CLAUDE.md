@@ -15,6 +15,7 @@ Training app: users register, create trips, add people, record shared expenses, 
 - **cookie** (`cookie`): parse and serialize cookies (no other use).
 - **React** (`react`, `react-dom`): front-end UI library.
 - **Vite** (`vite`): front-end dev server and build.
+- **React Router** (`react-router-dom`): front-end routes and navigation.
 - **Vitest** (`vitest`): unit test runner in both apps.
 - **jsdom** (`jsdom`): simulated browser for front-end component tests.
 - **React Testing Library** (`@testing-library/react`): front-end component tests.
