@@ -40,6 +40,18 @@ function renderTrips(onSessionChange?: (live: boolean) => void) {
   );
 }
 
+// Renders /trips as if the trip page had just navigated there after a delete (F2.R10).
+function renderTripsAfterDelete(deletedTripName: string) {
+  render(
+    <MemoryRouter initialEntries={[{ pathname: '/trips', state: { deletedTripName } }]}>
+      <Routes>
+        <Route path="/trips" element={<Trips />} />
+        <Route path="/login" element={<h2>Log in</h2>} />
+      </Routes>
+    </MemoryRouter>,
+  );
+}
+
 describe('F2 Trips list screen', () => {
   const fetchMock = vi.fn<typeof fetch>();
 
@@ -119,6 +131,24 @@ describe('F2 Trips list screen', () => {
 
     await waitFor(() => expect(screen.getByRole('list')).toBeTruthy());
     expect(listTripsMock).toHaveBeenCalledTimes(2);
+  });
+
+  it('F2.AC11 after a delete the Trips list shows the notice with the deleted trip name in a status element', async () => {
+    listTripsMock.mockResolvedValue(TRIPS);
+
+    renderTripsAfterDelete('Lisbon');
+
+    const notice = await screen.findByRole('status');
+    expect(notice.textContent).toBe('Trip “Lisbon” deleted.');
+  });
+
+  it('F2.AC11 the Trips list shows no notice when it is opened without a delete', async () => {
+    listTripsMock.mockResolvedValue(TRIPS);
+
+    renderTrips();
+
+    await screen.findByRole('list');
+    expect(screen.queryByRole('status')).toBeNull();
   });
 
   it('F2.AC9 a 401 from the gate redirects to Log in and does not request the list', async () => {

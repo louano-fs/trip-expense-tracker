@@ -1,11 +1,25 @@
 import { useEffect, useRef, useState } from 'react';
-import { Navigate } from 'react-router-dom';
+import { Navigate, useLocation } from 'react-router-dom';
 import { listTrips, type Trip } from '../api/trips';
 import { ApiError } from '../api/client';
 import { TripList } from '../components/TripList';
 import { NewTripForm } from '../components/NewTripForm';
 import { RequireSession } from '../components/RequireSession';
 import { copy } from '../copy';
+
+// Copy for the after-delete notice (F2.R10). Added in F2.T9 (new copy, for review).
+// copy.ts is outside this task's file list, so the string is kept here.
+const deletedCopy = {
+  notice: (name: string) => `Trip “${name}” deleted.`,
+} as const;
+
+// Reads the deleted trip's name from the router state set by the trip page (F2.R10).
+// Anything else in the state gives null, so no notice shows.
+function readDeletedName(state: unknown): string | null {
+  if (typeof state !== 'object' || state === null) return null;
+  const name = (state as { deletedTripName?: unknown }).deletedTripName;
+  return typeof name === 'string' ? name : null;
+}
 
 // Route gate for the Trips screen (F1.R9, F1.R10). Calls the guarded trip list route and
 // only its status is used, so a 401 keeps the expired notice from RequireSession (F1.AC23).
@@ -40,6 +54,8 @@ interface TripsScreenProps {
 }
 
 function TripsScreen({ onSessionChange }: TripsScreenProps) {
+  const location = useLocation();
+  const deletedName = readDeletedName(location.state);
   const [state, setState] = useState<ListState>({ kind: 'loading' });
   const [attempt, setAttempt] = useState(0);
   const retryRef = useRef<HTMLButtonElement>(null);
@@ -106,6 +122,7 @@ function TripsScreen({ onSessionChange }: TripsScreenProps) {
   return (
     <section>
       <h2>{copy.tripsHeading}</h2>
+      {deletedName !== null && <p role="status">{deletedCopy.notice(deletedName)}</p>}
       {state.kind === 'loading' && <p>{copy.tripsLoading}</p>}
       {state.kind === 'failed' && (
         <>

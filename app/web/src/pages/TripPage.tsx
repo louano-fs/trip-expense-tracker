@@ -1,7 +1,8 @@
 import { useCallback, useEffect, useRef, useState } from 'react';
-import { Link, Navigate, useParams } from 'react-router-dom';
+import { Link, Navigate, useNavigate, useParams } from 'react-router-dom';
 import { getTrip, type Trip } from '../api/trips';
 import { ApiError } from '../api/client';
+import { DeleteTripDialog } from '../components/DeleteTripDialog';
 import { RequireSession } from '../components/RequireSession';
 import { copy } from '../copy';
 import { formatCreatedDate } from '../format/date';
@@ -52,12 +53,24 @@ interface TripScreenProps {
 }
 
 function TripScreen({ id, onSessionChange }: TripScreenProps) {
+  const navigate = useNavigate();
   const [state, setState] = useState<TripState>({ kind: 'loading' });
+  const [confirming, setConfirming] = useState(false);
+  const deleteButtonRef = useRef<HTMLButtonElement>(null);
+  // Set when the dialog closes without deleting, so focus returns to "Delete trip" (accessibility).
+  const returnFocusRef = useRef(false);
   // Keeps the latest callback without re-running the request when its identity changes.
   const onChangeRef = useRef(onSessionChange);
   useEffect(() => {
     onChangeRef.current = onSessionChange;
   });
+
+  useEffect(() => {
+    if (!confirming && returnFocusRef.current) {
+      returnFocusRef.current = false;
+      deleteButtonRef.current?.focus();
+    }
+  }, [confirming]);
 
   useEffect(() => {
     let active = true;
@@ -116,13 +129,35 @@ function TripScreen({ id, onSessionChange }: TripScreenProps) {
   }
 
   const { trip } = state;
+
+  function closeDialog() {
+    returnFocusRef.current = true;
+    setConfirming(false);
+  }
+
   return (
     <section>
       <h1>{trip.name}</h1>
       <p>{copy.tripCreated(formatCreatedDate(trip.createdAt))}</p>
       <p>{tripCopy.placeholder}</p>
-      <button type="button">{tripCopy.deleteTrip}</button>
+      <button ref={deleteButtonRef} type="button" onClick={() => setConfirming(true)}>
+        {tripCopy.deleteTrip}
+      </button>
       <Link to="/trips">{tripCopy.backToTrips}</Link>
+      {/* F2.R10: a deleted trip goes to the Trips list with its name for the notice. F2.R12: a missing trip shows not-found. */}
+      {confirming && (
+        <DeleteTripDialog
+          tripId={trip.id}
+          tripName={trip.name}
+          onCancel={closeDialog}
+          onDeleted={() => navigate('/trips', { state: { deletedTripName: trip.name } })}
+          onNotFound={() => {
+            returnFocusRef.current = false;
+            setConfirming(false);
+            setState({ kind: 'not-found' });
+          }}
+        />
+      )}
     </section>
   );
 }
