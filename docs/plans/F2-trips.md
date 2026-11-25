@@ -223,14 +223,14 @@ Also covered: F1.AC10 (no cookie → `401`) is moved from the placeholder test i
 
 ## Review checklist
 A person checks these in code review, because unit tests can't prove them:
-- [ ] `trips` has no unique constraint on `(owner_id, name)`, and `002-trips.sql` runs in one migration transaction (F2.T2).
-- [ ] Every trip query in `repositories/trips.ts` has `owner_id = ?` (for list and find) and uses `?` parameters only (F2.T2).
-- [ ] The list query orders by `created_at DESC, id DESC` (F2.T2).
-- [ ] Every child table added by F3–F6 has a foreign key to `trips.id` with `ON DELETE CASCADE` (F2.T2, F2.T3).
-- [ ] `deleteTrip` runs its reload, owner check and delete inside one transaction (F2.T3).
-- [ ] `apiGuard` runs before the service in all four handlers (F2.T4).
-- [ ] The F1.AC10 assertion moved from `trips-placeholder.test.ts` (deleted) into `trips.test.ts` unchanged (F2.T4). This is a test removal, so a person approves it.
-- [ ] No response contains `owner_id` or another user's data (F2.T3, F2.T4).
+- [x] `trips` has no unique constraint on `(owner_id, name)`, and `002-trips.sql` runs in one migration transaction (F2.T2).
+- [x] Every trip query in `repositories/trips.ts` has `owner_id = ?` (for list and find) and uses `?` parameters only (F2.T2).
+- [x] The list query orders by `created_at DESC, id DESC` (F2.T2).
+- [x] Every child table added by F3–F6 has a foreign key to `trips.id` with `ON DELETE CASCADE` (F2.T2, F2.T3).
+- [x] `deleteTrip` runs its reload, owner check and delete inside one transaction (F2.T3).
+- [x] `apiGuard` runs before the service in all four handlers (F2.T4).
+- [x] The F1.AC10 assertion moved from `trips-placeholder.test.ts` (deleted) into `trips.test.ts` unchanged (F2.T4). This is a test removal, so a person approves it.
+- [x] No response contains `owner_id` or another user's data (F2.T3, F2.T4).
 
 ## Risks
 - **F1 must be built first.** F2 uses F1's migration runner, guards, client and `RequireSession`. Nothing under `app/` exists yet, so F2 starts only after F1.T1–T12 are committed on `week-1` or the feature branch `F2-trips`.

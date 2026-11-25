@@ -295,14 +295,14 @@ Spec test-plan rows not in the table above: "Duplicate email under concurrency" 
 
 ## Review checklist
 A person checks these in code review, because unit tests can't prove them:
-- [ ] The `users.email` unique index exists in `001-auth.sql`, and `insertUser` maps the violation to "taken" (F1.T4, F1.T6).
-- [ ] Session cookie has `__Host-`, `HttpOnly`, `Secure`, `SameSite=Lax`, `Path=/`; expiry is read from `sessions.expires_at` (F1.T5, F1.T10).
-- [ ] No password, hash, session token or cookie value is passed to the logger, in any route or error handler (F1.T1, F1.T10).
-- [ ] Every migration runs in one transaction; the `sessions` foreign key cascades (F1.T4).
-- [ ] Every SQL statement uses `?` parameters (F1.T4).
-- [ ] Argon2id parameters match the spec in `password.ts` (F1.T3).
-- [ ] The starter blocklist in `blocklist.ts` was read by a person (F1.T2). No file is downloaded.
-- [ ] `ownsTrip` is called after `apiGuard` in every future trip endpoint (F1.T9; enforced in F2–F6).
+- [x] The `users.email` unique index exists in `001-auth.sql`, and `insertUser` maps the violation to "taken" (F1.T4, F1.T6).
+- [x] Session cookie has `__Host-`, `HttpOnly`, `Secure`, `SameSite=Lax`, `Path=/`; expiry is read from `sessions.expires_at` (F1.T5, F1.T10).
+- [x] No password, hash, session token or cookie value is passed to the logger, in any route or error handler (F1.T1, F1.T10).
+- [x] Every migration runs in one transaction; the `sessions` foreign key cascades (F1.T4).
+- [x] Every SQL statement uses `?` parameters (F1.T4).
+- [x] Argon2id parameters match the spec in `password.ts` (F1.T3).
+- [x] The starter blocklist in `blocklist.ts` was read by a person (F1.T2). No file is downloaded.
+- [x] `ownsTrip` is called after `apiGuard` in every future trip endpoint (F1.T9; enforced in F2–F6).
 
 ## Risks
 - **Budget ($15, Haiku only):** 12 tasks with tests can run over budget. Each task is kept to one session. Stop and ask if a task runs long.
