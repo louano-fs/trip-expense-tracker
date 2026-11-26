@@ -70,7 +70,7 @@ Reused by later features: `auth/guards.ts` (`ownsTrip`, `apiGuard`, `pageGuard`)
 - **Builds:** none (foundation for all requirements)
 - **Proves:** none. Supports F1.AC12 and the "no sensitive data in logs" check by setting up redaction.
 - **Depends on:** none
-- **Files:** `app/api/package.json`, `app/api/tsconfig.json`, `app/api/vitest.config.ts`, `app/api/src/config.ts`, `app/api/src/config.test.ts`, `app/api/src/logger.ts`, `app/api/src/logger.test.ts`, `app/api/src/index.ts`, `app/web/package.json`, `app/web/tsconfig.json`, `app/web/vite.config.ts`, `app/web/vitest.config.ts`, `app/web/src/main.tsx`, `app/web/src/App.test.tsx`, `CLAUDE.md` (library list only), `.gitignore` (add `*.sqlite`, `app/api/data/`)
+- **Files:** `app/api/package.json`, `app/api/tsconfig.json`, `app/api/vitest.config.ts`, `app/api/src/config.ts`, `app/api/src/config.test.ts`, `app/api/src/logger.ts`, `app/api/src/logger.test.ts`, `app/api/src/index.ts`, `app/web/package.json`, `app/web/tsconfig.json`, `app/web/vite.config.ts`, `app/web/vitest.config.ts`, `app/web/src/main.tsx`, `app/web/src/App.tsx`, `app/web/index.html`, `app/web/src/App.test.tsx`, `CLAUDE.md` (library list only), `.gitignore` (add `*.sqlite`, `app/api/data/`)
 - **Steps:**
   1. In `app/api`, run `npm init`, set `engines.node` to the current LTS, install the listed runtime libraries and dev libraries, add scripts `dev`, `test` (`vitest run`), `typecheck` (`tsc --noEmit`).
   2. Set `strict: true` in `tsconfig.json`. Add a `vitest.config.ts` with the `node` environment.
@@ -87,15 +87,15 @@ Reused by later features: `auth/guards.ts` (`ownsTrip`, `apiGuard`, `pageGuard`)
 - **Builds:** F1.R2, F1.R3 (length and no trimming), F1.R12
 - **Proves:** F1.AC2 (email normalization part), F1.AC3, F1.AC4, F1.AC16, F1.AC17
 - **Depends on:** F1.T1
-- **Files:** `app/api/src/auth/validation.ts`, `app/api/src/auth/validation.test.ts`, `app/api/src/auth/blocklist.ts`, `app/api/src/auth/blocklist.test.ts`, `app/api/src/auth/blocklist.txt`, `app/api/src/auth/blocklist.README.md`
+- **Files:** `app/api/src/auth/validation.ts`, `app/api/src/auth/validation.test.ts`, `app/api/src/auth/blocklist.ts`, `app/api/src/auth/blocklist.test.ts`, `app/api/src/auth/blocklist.README.md`
 - **Steps:**
   1. Write `normalizeEmail(raw)`: trim, lowercase. `validateEmail(normalized)`: regex format check, length ≤ 254. Returns `{ ok: true, email }` or `{ ok: false, field: 'email', message }`.
   2. Write `validatePasswordLength(password)`: NFC normalize (without trimming), count code points; 15 ≤ n ≤ 128. Return the field error with the spec's exact copy.
-  3. Download the SecLists common-password file once (a person reviews the downloaded file before it is committed). Keep entries of 15+ characters, lowercase them, add the app words ("trip expense tracker", "trip expense", "expense tracker"). Save as `blocklist.txt`, one entry per line. Record the source commit and licence in `blocklist.README.md`.
+  3. Add a short starter list of common passwords as an exported constant in `blocklist.ts`: about 20 entries of 15+ characters, lowercased, including the app words ("trip expense tracker", "expense tracker"; "trip expense" is left out because it is under 15 characters). No file download. Record in `blocklist.README.md` that the list is a small starter set written for this project, and that a full list is a later follow-up.
   4. Write `isBlockedPassword(password, email, list)`: compares case-insensitively with the list, with the email, and with the part before `@`, after NFC normalization.
-- **Tests:** `validation.test.ts`: F1.AC2 (`'  SAM@Mail.com '` normalizes to `sam@mail.com`), F1.AC4 (no `@`, no domain, 255-character email rejected; a valid one accepted), F1.AC3 (14 rejected, 15 accepted), F1.AC16 (128 accepted, 129 rejected). `blocklist.test.ts`: F1.AC17 (blocked entry in any case; the email and the part before `@` padded to 15 characters are blocked; a non-listed password passes). Fakes: a small in-test list passed as argument; the real `blocklist.txt` is loaded only in `blocklist.test.ts` via `readFileSync`... (reads a file, not the network, so allowed) — or the list is loaded in T6 at start-up. Use the small fake list.
-- **Done when:** `npm test` passes; the bundled `blocklist.txt` has no entry shorter than 15 characters.
-- **Needs person review:** yes (authentication: password rules). Person also reads the downloaded blocklist before it is committed.
+- **Tests:** `validation.test.ts`: F1.AC2 (`'  SAM@Mail.com '` normalizes to `sam@mail.com`), F1.AC4 (no `@`, no domain, 255-character email rejected; a valid one accepted), F1.AC3 (14 rejected, 15 accepted), F1.AC16 (128 accepted, 129 rejected). `blocklist.test.ts`: F1.AC17 (blocked entry in any case; the email and the part before `@` padded to 15 characters are blocked; a non-listed password passes). Fakes: a small in-test list passed as argument. `blocklist.test.ts` also checks that every entry in the starter constant is 15+ characters.
+- **Done when:** `npm test` and `npm run typecheck` pass in `app/api`; every entry in the starter list is 15+ characters.
+- **Needs person review:** yes (authentication: password rules).
 - **Commit:** `F1.T2: Add email and password rules and blocklist`
 
 ### F1.T3 — Password hashing with Argon2id
@@ -236,9 +236,9 @@ Reused by later features: `auth/guards.ts` (`ownsTrip`, `apiGuard`, `pageGuard`)
 - **Builds:** F1.R8 (UI), F1.R9, F1.R10 (UI), F1.R7 (UI notice)
 - **Proves:** F1.AC7 (UI), F1.AC9, F1.AC23 (UI)
 - **Depends on:** F1.T9, F1.T11
-- **Files:** `app/web/src/components/RequireSession.tsx`, `app/web/src/components/RequireSession.test.tsx`, `app/web/src/components/Header.tsx`, `app/web/src/components/Header.test.tsx`, `app/web/src/pages/LogIn.tsx` (notice prop), `app/web/src/pages/TripPage.tsx` (shell), `app/web/src/App.tsx`, `app/api/src/http/routes/trips-placeholder.ts`, `app/api/src/http/routes/trips-placeholder.test.ts`
+- **Files:** `app/web/src/components/RequireSession.tsx`, `app/web/src/components/RequireSession.test.tsx`, `app/web/src/components/Header.tsx`, `app/web/src/components/Header.test.tsx`, `app/web/src/pages/LogIn.tsx` (notice prop), `app/web/src/pages/TripPage.tsx` (shell), `app/web/src/App.tsx`, `app/api/src/http/routes/trips-placeholder.ts`, `app/api/src/http/routes/trips-placeholder.test.ts`, `app/api/src/http/app.ts` (mount the placeholder route), `app/api/src/index.ts` (one wiring line: `trips: { sessions, clock }`), `app/web/src/pages/LogIn.test.tsx`, `docs/specs/api.md`
 - **Steps:**
-  1. `RequireSession`: the trip route loads its data through the API. The API returns 401 when logged out or expired; on 401 the client redirects to `/login`, with the expired notice when the user had been logged in, otherwise without a notice. No trip content is rendered before the API answers.
+  1. `RequireSession`: the trip route loads its data through the API. The API returns 401 when logged out or expired. A 401 body carries `reason: 'expired'` only when a session cookie was sent but no live session matched; with no cookie there is no reason. On 401 the client redirects to `/login`, with the expired notice only when `reason` is `'expired'`, otherwise without a notice. No trip content is rendered before the API answers.
   2. `Header.tsx`: "Log out" visible only when logged in; calls `logout`, then navigates to `/login`.
   3. `LogIn.tsx`: shows "Your session has expired. Please log in again." when the expired notice is set.
   4. `TripPage.tsx`: shell route `/trips/:id` that calls the guarded placeholder endpoint `GET /api/trips/:id` (added in `trips-placeholder.ts`, returns 401 when logged out, 404 otherwise for F1 since no trips exist yet).
@@ -295,14 +295,14 @@ Spec test-plan rows not in the table above: "Duplicate email under concurrency" 
 
 ## Review checklist
 A person checks these in code review, because unit tests can't prove them:
-- [ ] The `users.email` unique index exists in `001-auth.sql`, and `insertUser` maps the violation to "taken" (F1.T4, F1.T6).
-- [ ] Session cookie has `__Host-`, `HttpOnly`, `Secure`, `SameSite=Lax`, `Path=/`; expiry is read from `sessions.expires_at` (F1.T5, F1.T10).
-- [ ] No password, hash, session token or cookie value is passed to the logger, in any route or error handler (F1.T1, F1.T10).
-- [ ] Every migration runs in one transaction; the `sessions` foreign key cascades (F1.T4).
-- [ ] Every SQL statement uses `?` parameters (F1.T4).
-- [ ] Argon2id parameters match the spec in `password.ts` (F1.T3).
-- [ ] The downloaded blocklist was read by a person before being committed (F1.T2).
-- [ ] `ownsTrip` is called after `apiGuard` in every future trip endpoint (F1.T9; enforced in F2–F6).
+- [x] The `users.email` unique index exists in `001-auth.sql`, and `insertUser` maps the violation to "taken" (F1.T4, F1.T6).
+- [x] Session cookie has `__Host-`, `HttpOnly`, `Secure`, `SameSite=Lax`, `Path=/`; expiry is read from `sessions.expires_at` (F1.T5, F1.T10).
+- [x] No password, hash, session token or cookie value is passed to the logger, in any route or error handler (F1.T1, F1.T10).
+- [x] Every migration runs in one transaction; the `sessions` foreign key cascades (F1.T4).
+- [x] Every SQL statement uses `?` parameters (F1.T4).
+- [x] Argon2id parameters match the spec in `password.ts` (F1.T3).
+- [x] The starter blocklist in `blocklist.ts` was read by a person (F1.T2). No file is downloaded.
+- [x] `ownsTrip` is called after `apiGuard` in every future trip endpoint (F1.T9; enforced in F2–F6).
 
 ## Risks
 - **Budget ($15, Haiku only):** 12 tasks with tests can run over budget. Each task is kept to one session. Stop and ask if a task runs long.

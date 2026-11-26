@@ -8,7 +8,20 @@ Training app: users register, create trips, add people, record shared expenses, 
 - **Database:** SQLite (one file, foreign keys on, so cascades work).
 - **Unit tests:** Vitest in both apps. Front-end component tests use a simulated browser environment (jsdom) with React Testing Library.
 - **Package manager:** npm.
-- Libraries not listed here (SQLite driver, logger, password hashing, validation) are chosen in a feature plan, then added to this list.
+- **Express** (`express`): HTTP server for the back end.
+- **better-sqlite3** (`better-sqlite3`): SQLite driver.
+- **@node-rs/argon2** (`@node-rs/argon2`): Argon2id password hashing.
+- **pino** (`pino`): project logger, with redaction of passwords and cookies.
+- **cookie** (`cookie`): parse and serialize cookies (no other use).
+- **React** (`react`, `react-dom`): front-end UI library.
+- **Vite** (`vite`): front-end dev server and build.
+- **React Router** (`react-router-dom`): front-end routes and navigation.
+- **Vitest** (`vitest`): unit test runner in both apps.
+- **jsdom** (`jsdom`): simulated browser for front-end component tests.
+- **React Testing Library** (`@testing-library/react`): front-end component tests.
+- **user-event** (`@testing-library/user-event`): simulated user input in front-end tests.
+- **TypeScript** (`typescript`): type checker (`npm run typecheck`).
+- Libraries not listed here (validation, and others) are chosen in a feature plan, then added to this list.
 
 ## Layout
 ```text

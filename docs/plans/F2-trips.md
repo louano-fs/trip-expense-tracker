@@ -107,7 +107,7 @@ Reused from F1: `db/open.ts`, `db/migrate.ts`, `logger.ts`, `auth/guards.ts` (`a
 - **Builds:** F2.R1, F2.R5, F2.R8 (API part), F2.R11, F2.R12 (404 body)
 - **Proves:** F2.AC9 (API), F2.AC8 (HTTP 404), F2.AC12 (HTTP 404), F2.AC13 (response bodies), F2.AC1 (201 response), F1.AC10 (moved from the placeholder test)
 - **Depends on:** F2.T3, F1.T9, F1.T10
-- **Files:** `app/api/src/http/routes/trips.ts`, `app/api/src/http/routes/trips.test.ts`, `app/api/src/http/app.ts`, `app/api/src/index.ts`, `app/api/src/http/routes/trips-placeholder.ts` (deleted), `app/api/src/http/routes/trips-placeholder.test.ts` (deleted), `docs/specs/api.md`
+- **Files:** `app/api/src/http/routes/trips.ts`, `app/api/src/http/routes/trips.test.ts`, `app/api/src/http/app.ts`, `app/api/src/index.ts`, `app/api/src/http/routes/trips-placeholder.ts` (deleted), `app/api/src/http/routes/trips-placeholder.test.ts` (deleted), `app/api/src/db/repositories/trips.ts` (add `findTripById(db, id)`, which returns the trip with its `ownerId`, for the store adapter), `app/api/src/db/repositories/trips.test.ts` (test for it), `docs/specs/api.md`
 - **Steps:**
   1. Handlers `listTripsHandler`, `createTripHandler`, `getTripHandler`, `deleteTripHandler`. Each runs `apiGuard` first and returns `401` with no data when logged out.
   2. `POST` returns `201` with `{ trip }` on success, `400` with `{ field: 'name', message }` for a bad name. `GET /:id` returns `200` `{ trip }`. `DELETE /:id` returns `204`. Missing or other-user trips return `404` with the same body for both.
@@ -223,14 +223,14 @@ Also covered: F1.AC10 (no cookie → `401`) is moved from the placeholder test i
 
 ## Review checklist
 A person checks these in code review, because unit tests can't prove them:
-- [ ] `trips` has no unique constraint on `(owner_id, name)`, and `002-trips.sql` runs in one migration transaction (F2.T2).
-- [ ] Every trip query in `repositories/trips.ts` has `owner_id = ?` (for list and find) and uses `?` parameters only (F2.T2).
-- [ ] The list query orders by `created_at DESC, id DESC` (F2.T2).
-- [ ] Every child table added by F3–F6 has a foreign key to `trips.id` with `ON DELETE CASCADE` (F2.T2, F2.T3).
-- [ ] `deleteTrip` runs its reload, owner check and delete inside one transaction (F2.T3).
-- [ ] `apiGuard` runs before the service in all four handlers (F2.T4).
-- [ ] The F1.AC10 assertion moved from `trips-placeholder.test.ts` (deleted) into `trips.test.ts` unchanged (F2.T4). This is a test removal, so a person approves it.
-- [ ] No response contains `owner_id` or another user's data (F2.T3, F2.T4).
+- [x] `trips` has no unique constraint on `(owner_id, name)`, and `002-trips.sql` runs in one migration transaction (F2.T2).
+- [x] Every trip query in `repositories/trips.ts` has `owner_id = ?` (for list and find) and uses `?` parameters only (F2.T2).
+- [x] The list query orders by `created_at DESC, id DESC` (F2.T2).
+- [x] Every child table added by F3–F6 has a foreign key to `trips.id` with `ON DELETE CASCADE` (F2.T2, F2.T3).
+- [x] `deleteTrip` runs its reload, owner check and delete inside one transaction (F2.T3).
+- [x] `apiGuard` runs before the service in all four handlers (F2.T4).
+- [x] The F1.AC10 assertion moved from `trips-placeholder.test.ts` (deleted) into `trips.test.ts` unchanged (F2.T4). This is a test removal, so a person approves it.
+- [x] No response contains `owner_id` or another user's data (F2.T3, F2.T4).
 
 ## Risks
 - **F1 must be built first.** F2 uses F1's migration runner, guards, client and `RequireSession`. Nothing under `app/` exists yet, so F2 starts only after F1.T1–T12 are committed on `week-1` or the feature branch `F2-trips`.
@@ -246,3 +246,4 @@ None. The spec has no open questions, and every choice above is a clear best cho
 ## Decisions log
 - 2026-11-15: Plan created as Draft from the Approved F2 spec (spec version 2026-11-15).
 - 2026-11-15: Plan approved by the user. This includes the T4 removal of `trips-placeholder.test.ts`, with its F1.AC10 assertion moved unchanged into `trips.test.ts`; the user approved the plan as written.
+- 2026-11-24: F2.T2. `migrate.test.ts` expected only `001-auth` from `loadMigrations`; it now expects `['001-auth', '002-trips']`. Approved by the user. `trips.name` also has a length `CHECK` (1 to 100), matching `users`.
